@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import Tests.testE1.TResultD;
 import ejercicio1.Ejercicio1;
 import us.lsi.common.Pair;
 import us.lsi.common.Trio;
@@ -19,165 +18,206 @@ import utils.TipoAjuste;
 public class testE1 {
 
 	public static void main(String[] args) {
-		
-		generadatosTiempoEjecucion();
+		System.out.println("--------------- PROBAMOS QUE LOS MÉTODOS FUNCIONEN CORRECTAMENTE -------");
+		System.out.println(Ejercicio1.factorialDoubleItr(5));
+		System.out.println(Ejercicio1.factorialDoubleRec(5));
+
+		System.out.println(Ejercicio1.factorialBigIntItr(5));
+		System.out.println(Ejercicio1.factorialBigIntRec(5));
+
+		System.out.println("\n--------------- GENERAMOS LOS .csv Y REPRESENTAMOS	");
+		// generadatosTiempoEjecucion();
+		// generadatosTiempoEjecucion2();
 		muestraGraficas();
 	}
-	
-	private static Integer nMin = 1; // n mÃ­nimo
-	private static Integer nMaxRec = 60; // n mÃ¡ximo para el fibonacci recursivo sin memoria 
-	private static Integer nMaxIter = 70; // n mÃ¡ximo para el fibonacci no exponencial
-	private static Integer numSizes = 80; // nÃºmero de problemas
-	private static Integer numMediciones = 90; //10; // nÃºmero de mediciones de tiempo de cada caso (nÃºmero de experimentos)
-												// para exponencial se puede reducir 
-	private static Integer numIter = 120; //50; // nÃºmero de iteraciones para cada mediciÃ³n de tiempo
-											// para exponencial se puede reducir 
-	private static Integer numIterWarmup = 2000; // nÃºmero de iteraciones para warmup
-	
-	// Trios de mÃ©todos a probar con su tipo de ajuste y etiqueta para el nombre de los datos
-	private static List<Trio<Function<Integer, Number>, TipoAjuste, String>> metodosBigInteger = 
-			List.of(
-				Trio.of(Ejercicio1::factorialBigIntRec, TipoAjuste.EXP, "factorial_BigInt_Rec"), 
-				Trio.of(Ejercicio1::factorialBigIntItr, TipoAjuste.EXP, "factorial_BigInt_Itr")
-			);
-	
-	private static List<Trio<Function<Integer, Number>, TipoAjuste, String>> metodosDouble = 
-			List.of(
-					Trio.of(Ejercicio1::factorialDoubleRec, TipoAjuste.EXP, "factorial_Double_Rec"), 
-					Trio.of(Ejercicio1::factorialDoubleItr, TipoAjuste.EXP,"factorial_Double_Itr")
-			);
 
+	// Definimos parámetros para los valores
+	private static Integer nMin = 1; // n mínimo para el cálculo del factorial
+	private static Integer nMax = 10000; // n máximo para el cálculo del factorial CON DOUBLE private static Integer
+											// nMax2 = 5000; // n máximo para el cálculo del factorial CON BIGINT
+											// private static Integer numSizes = 200; // número de problemas (número de
+											// factoriales distintos a calcular)
+	private static Integer nMax2 = 500; // n máximo para el cálculo del factorial CON BIGINT
+	private static Integer numSizes = 60; // número de problemas (número de factoriales distintos a calcular)
+	private static Integer numMediciones = 10; // número de mediciones de tiempo de cada caso (número de experimentos)
+	private static Integer numIter = 50; // número de iteraciones para cada medición de tiempo
+	private static Integer numIterWarmup = 1000; // número de iteraciones para warmup
 
-	
-	private static <E> void generadatosTiempoEjecucionMetodos(List<Trio<Function<E, Number>, TipoAjuste, String>> metodos) {
-		
-		for (int i=0; i<metodos.size(); i++) { 
-			int numMax = nMaxIter;//i==0 ? nMaxRec : nMaxIter; 
-			Boolean flagExp = false; //i==0 ? true : false;
-			
-			String datosalida = String.format("datos/Tiempos%s.csv",
-					metodos.get(i).third());
-			
-			testTiemposEjecucion(nMin, numMax, 
-						metodos.get(i).first(),
-						datosalida,
-						flagExp);
-			}
-		
-	}
-	
+	// Trios de métodos a probar con su tipo de ajuste y etiqueta para el nombre de
+	// los datos
+	// Trios para Double
+	private static List<Trio<Function<Integer, Double>, TipoAjuste, String>> metodos = List.of(
+			Trio.of(Ejercicio1::factorialDoubleRec, TipoAjuste.EXP, "factorialDoubleRec"),
+			Trio.of(Ejercicio1::factorialDoubleItr, TipoAjuste.EXP, "factorialDoubleItr"));
+	// Trios para BigInteger
+	private static List<Trio<Function<Integer, BigInteger>, TipoAjuste, String>> metodos2 = List.of(
+			Trio.of(Ejercicio1::factorialBigIntRec, TipoAjuste.EXP, "factorialBigIntRec"),
+			Trio.of(Ejercicio1::factorialBigIntItr, TipoAjuste.EXP, "factorialBigIntItr"));
+
+	// Generamos datos Double
 	public static void generadatosTiempoEjecucion() {
-		
-		generadatosTiempoEjecucionMetodos(metodosBigInteger);
-		generadatosTiempoEjecucionMetodos(metodosDouble);
-	}
-	
-	
-	public static <E> void muestraGraficasMetodos(List<Trio<Function<E, Number>, TipoAjuste, String>> metodos, List<String> datosSalida, List<String> labels) {
-		for (int i=0; i<metodos.size(); i++) { 
-			
-			String datosalida = String.format("datos/Tiempos%s.csv",
-					metodos.get(i).third());
-			datosSalida.add(datosalida);
-			String label = metodos.get(i).third();
-			System.out.println(label);
+		for (Trio<Function<Integer, Double>, TipoAjuste, String> element : metodos) {
+			String datosalida = String.format("datos/Tiempos%s.csv", element.third());
+			testTiemposEjecucion(nMin, nMax,
 
-			TipoAjuste tipoAjuste = metodos.get(i).second();
-			GraficosAjuste.show(datosalida, tipoAjuste, label);	
-			
-			// Obtener ajusteString para mostrarlo en grÃ¡fica combinada
-			Pair<Function<Double, Double>, String> parCurve = GraficosAjuste.fitCurve(
-					DataCurveFitting.points(datosalida), tipoAjuste);
-			String ajusteString = parCurve.second();
-			labels.add(String.format("%s     %s", label, ajusteString));
+					element.first(), datosalida);
 		}
 	}
-	
-	public static void muestraGraficas() {
-		List<String> datosSalida = new ArrayList<>();
-		List<String> labels = new ArrayList<>();
-		
-		muestraGraficasMetodos(metodosBigInteger, datosSalida, labels);
-		muestraGraficasMetodos(metodosDouble, datosSalida, labels);
-		
-		GraficosAjuste.showCombined("Grafica", datosSalida, labels);
-	}
-	
-	
 
-	
-	
-	@SuppressWarnings("unchecked")
-	public static <E> void testTiemposEjecucion(Integer nMin, Integer nMax,
-			Function<E, Number> funcionFib,
-			String ficheroTiempos,
-			Boolean flagExp) {
-		Map<Problema, Double> tiempos = new HashMap<Problema,Double>();
-		Integer nMed = flagExp ? 1 : numMediciones; 
-		for (int iter=0; iter<nMed; iter++) {
-			for (int i=0; i<numSizes; i++) {
-				Double r = Double.valueOf(nMax-nMin)/(numSizes-1);
-				Integer tam = (Integer.MAX_VALUE/nMax > i) 
-						? nMin + i*(nMax-nMin)/(numSizes-1)
-						: nMin + (int) (r*i) ;
+	// Generamos datos BigInteger
+	public static void generadatosTiempoEjecucion2() {
+		for (Trio<Function<Integer, BigInteger>, TipoAjuste, String> element : metodos2) {
+			String datosalida = String.format("datos/Tiempos%s.csv", element.third());
+
+			testTiemposEjecucion2(nMin, nMax2, element.first(), datosalida);
+		}
+	}
+
+	public static void testTiemposEjecucion(Integer nMin, Integer nMax, Function<Integer, Double> funcion,
+			String datosalida) {
+
+		// Hacemos un Map con el tamaño del problema como clave y el tiempo calculado
+		// como valor
+		Map<Problema, Double> tiempos = new HashMap<>();
+
+		// Iteramos las veces especificadas para sacar los menores tiempos
+		for (int iter = 0; iter < numMediciones; iter++) {
+//			Pasamos por todos los posibles tamaños
+			for (int i = 0; i < numSizes; i++) {
+				double r = (nMax - nMin) / (numSizes - 1);
+				Integer tam = (Integer.MAX_VALUE / nMax > i) ? nMin + i * (nMax - nMin) / (numSizes - 1)
+						: nMin + (int) (r * i);
+//			Obtenemos el tamaño del problema actual
 				Problema p = Problema.of(tam);
-				System.out.println(tam);
-				warmup(funcionFib, 10);
-				Integer nIter = flagExp ? 5 : numIter;
-				Number[] res = new Number[nIter];
+
+//			Hacemos warmup
+				warmup(funcion, 10);
+
+//			Obtenemos el tiempo empleado en cada iteracion y lo guardamos en un array
+				Double[] res = new Double[numIter];
 				Long t0 = System.nanoTime();
-				for (int z=0; z<nIter; z++) {
-					res[z] = funcionFib.apply((E) tam);
+				for (int z = 0; z < numIter; z++) {
+					res[z] = funcion.apply(tam);
 				}
 				Long t1 = System.nanoTime();
-				actualizaTiempos(tiempos, p, Double.valueOf(t1-t0)/nIter);
+//			Actualizamos los tiempos del Map con el nuevo tiempo calculado para el tamaño en cuestión
+				actualizaTiempos(tiempos, p, Double.valueOf((t1 - t0) / numIter));
 			}
-			
 		}
-		
-	
-		Resultados.toFile(tiempos.entrySet().stream()
-				.map(x->TResultD.of(x.getKey().tam(), 
-									x.getValue()))
-				.map(TResultD::toString),
-			ficheroTiempos, true);
-		
-	}
-	
-	private static void actualizaTiempos(Map<Problema, Double> tiempos, Problema p, double d) {
-		if (!tiempos.containsKey(p)) {
-			tiempos.put(p, d);
-		} else if (tiempos.get(p) > d) {
-				tiempos.put(p, d);
-		}
-	}
-	
-	
-	private static <E> BigInteger warmup(Function<E, Number> fib, Integer n) {
-		BigInteger res=BigInteger.ZERO;
-		BigInteger z = BigInteger.ZERO; 
-		for (int i=0; i<numIterWarmup; i++) {
-			if (fib.apply((E) n).equals(z)) z.add(BigInteger.ONE);
-		}
-		res = z.equals(BigInteger.ONE)? z.add(BigInteger.ONE):z;
-		return res;
-	}
-	
 
-	record TResultD(Integer tam, Double t) {
-		public static TResultD of(Integer tam, Double t){
-			return new TResultD(tam, t);
+		// Guardamos los resultados en un fichero
+		Resultados.toFile(tiempos.entrySet().stream()
+				.map(tiempo -> TamTiempo.of(tiempo.getKey().tam(), tiempo.getValue())).map(TamTiempo::toString),
+				datosalida, true);
+	}
+
+	// Lo mismo pero para BigInteger, en vez de Double
+	public static void testTiemposEjecucion2(Integer nMin, Integer nMax, Function<Integer, BigInteger> funcion,
+			String datosalida) {
+
+		Map<Problema, Double> tiempos = new HashMap<>();
+
+		for (int iter = 0; iter < numMediciones; iter++) {
+			for (int i = 0; i < numSizes; i++) {
+
+				double r = (nMax - nMin) / (numSizes - 1);
+				Integer tam = (Integer.MAX_VALUE / nMax > i) ? nMin + i * (nMax - nMin) / (numSizes - 1)
+						: nMin + (int) (r * i);
+				Problema p = Problema.of(tam);
+				warmup2(funcion, 10);
+				BigInteger[] res = new BigInteger[numIter];
+				Long t0 = System.nanoTime();
+				for (int z = 0; z < numIter; z++) {
+					res[z] = funcion.apply(tam);
+				}
+				Long t1 = System.nanoTime();
+				actualizaTiempos(tiempos, p, Double.valueOf((t1 - t0) / numIter));
+			}
 		}
-		
+
+		Resultados.toFile(tiempos.entrySet().stream()
+				.map(tiempo -> TamTiempo.of(tiempo.getKey().tam(), tiempo.getValue())).map(TamTiempo::toString),
+				datosalida, true);
+	}
+
+	// Record para almacenar el tamaño del problema en cada caso
+	private record Problema(Integer tam) {
+		public static Problema of(Integer tam) {
+			return new Problema(tam);
+		}
+	}
+
+	// Funciones para warmup
+	private static void warmup(Function<Integer, Double> fun, Integer n) {
+		for (int i = 0; i < numIterWarmup; i++) {
+			fun.apply(n);
+		}
+	}
+
+	private static void warmup2(Function<Integer, BigInteger> fun, Integer n) {
+		for (int i = 0; i < numIterWarmup; i++) {
+			fun.apply(n);
+		}
+	}
+
+	// Función para actualziar los tiempos de cada problema (nos vamos quedando con
+	// el menor)
+	private static void actualizaTiempos(Map<Problema, Double> tiempos, Problema p, Double tiempo) {
+		if (!tiempos.containsKey(p) || tiempos.get(p) > tiempo) {
+			tiempos.put(p, tiempo);
+		}
+	}
+
+	// Record para facilitar el guardado de datos en fichero
+	private record TamTiempo(Integer tam, Double t) {
+		public static TamTiempo of(Integer tam, Double t) {
+			return new TamTiempo(tam, t);
+		}
+
+		@Override
 		public String toString() {
 			return String.format("%d,%.0f", tam, t);
 		}
 	}
-	
 
-	record Problema(Integer tam) {
-		public static Problema of(Integer tam){
-			return new Problema(tam);
+	public static void muestraGraficas() {
+
+		List<String> datosSalida = new ArrayList<>();
+		List<String> labels = new ArrayList<>();
+
+		// Empezamos con los métodos Double
+		for (int i = 0; i < metodos.size(); i++) {
+//			Obtenemos el nombre de cada fichero y lo guardamos en una lista, al igual que la labe y el TipoAjuste para mostrar la gráfica
+			String datosalida = String.format("datos/Tiempos%s.csv", metodos.get(i).third());
+			datosSalida.add(datosalida);
+			String label = metodos.get(i).third();
+			System.out.println(label);
+			TipoAjuste tipoAjuste = metodos.get(i).second();
+			GraficosAjuste.show(datosalida, tipoAjuste, label);
+
+			// Obtener ajusteString para mostrarlo en gráfica combinada
+			Pair<Function<Double, Double>, String> parCurve = GraficosAjuste
+					.fitCurve(DataCurveFitting.points(datosalida), tipoAjuste);
+			String ajusteString = parCurve.second();
+			labels.add(String.format("%s	%s", label, ajusteString));
 		}
+		// Lo mismo para los métodos BigInteger
+		for (int i = 0; i < metodos2.size(); i++) {
+			String datosalida = String.format("datos/Tiempos%s.csv", metodos2.get(i).third());
+			datosSalida.add(datosalida);
+			String label = metodos2.get(i).third();
+			System.out.println(label);
+			TipoAjuste tipoAjuste = metodos2.get(i).second();
+			GraficosAjuste.show(datosalida, tipoAjuste, label);
+
+			// Obtener ajusteString para mostrarlo en gráfica combinada
+			Pair<Function<Double, Double>, String> parCurve = GraficosAjuste
+					.fitCurve(DataCurveFitting.points(datosalida), tipoAjuste);
+			String ajusteString = parCurve.second();
+			labels.add(String.format("%s	%s", label, ajusteString));
+		}
+
+		// Mostramos la gráfica combinada
+		GraficosAjuste.showCombined("Factorial", datosSalida, labels);
 	}
 }
